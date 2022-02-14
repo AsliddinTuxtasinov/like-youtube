@@ -1,9 +1,15 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model, admin as uadmin
+from django.contrib.auth import get_user_model, admin as u_admin
 
+from auser.models import CustomUserChannel
 User = get_user_model()
 
 
 @admin.register(User)
-class UserAdmin(uadmin.UserAdmin):
+class UserAdmin(u_admin.UserAdmin):
+    pass
+
+
+@admin.register(CustomUserChannel)
+class CustomUserChannelAdmin(admin.ModelAdmin):
     pass

@@ -5,6 +5,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import get_username_max_length
 
+from auser.models import CustomUserChannel
 UserModel = get_user_model()
 
 
@@ -50,5 +51,15 @@ class UserDetailsCustomSerializer(UserDetailsSerializer):
         if hasattr(UserModel, 'last_name'):
             extra_fields.append('last_name')
 
-        fields = ('pk', *extra_fields)
+        fields = ('id', *extra_fields)
         read_only_fields = ('email', 'date_joined')
+
+
+class CustomUserChannelSerializer(serializers.ModelSerializer):
+    owner = UserDetailsCustomSerializer(read_only=True)
+    create_at = serializers.DateTimeField(read_only=True)
+    owner_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = CustomUserChannel
+        fields = ("id", "owner", "name", "describe", "create_at", "owner_id")
