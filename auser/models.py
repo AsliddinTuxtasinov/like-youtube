@@ -21,7 +21,5 @@ class CustomUserChannel(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        # if self.name:
-        #     return self.name
-        # return self.owner.get_full_name()
+        # return self.name
         return str(self.pk)

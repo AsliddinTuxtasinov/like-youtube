@@ -21,7 +21,7 @@ class CustomUserChannelView(APIView):
             queryset.delete()
         else:
             raise validators.ValidationError(
-                detail={"message": "You cannot delete this review"}, code=status.HTTP_400_BAD_REQUEST)
+                detail={"message": "You cannot delete this channel"}, code=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def patch(self, request, id):
@@ -35,7 +35,7 @@ class CustomUserChannelView(APIView):
                 return Response(data=serializer.data, status=status.HTTP_200_OK)
             else:
                 raise validators.ValidationError(
-                    detail={"message": "You cannot update this review"}, code=status.HTTP_400_BAD_REQUEST)
+                    detail={"message": "You cannot update this channel"}, code=status.HTTP_400_BAD_REQUEST)
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -47,10 +47,16 @@ class CustomUserChannelCreateView(APIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        serializer = CustomUserChannelSerializer(data=request.data)
+        data = request.data
+        serializer = CustomUserChannelSerializer(data=data)
 
         if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
-        print("bad request is working")
+            owner_id = request.user.id
+            qs = CustomUserChannel.objects.filter(owner__id=owner_id)
+            if not qs.exists():
+                serializer.save(owner_id=owner_id)
+                return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            raise validators.ValidationError(
+                detail={"message": "You were already created channel"}, code=status.HTTP_400_BAD_REQUEST)
+
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)

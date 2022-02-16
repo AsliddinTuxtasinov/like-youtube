@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     # local apps
     'auser',
+    'content',
 ]
 
 SITE_ID = 1

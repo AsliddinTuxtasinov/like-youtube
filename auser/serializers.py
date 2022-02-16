@@ -58,7 +58,6 @@ class UserDetailsCustomSerializer(UserDetailsSerializer):
 class CustomUserChannelSerializer(serializers.ModelSerializer):
     owner = UserDetailsCustomSerializer(read_only=True)
     create_at = serializers.DateTimeField(read_only=True)
-    owner_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = CustomUserChannel
