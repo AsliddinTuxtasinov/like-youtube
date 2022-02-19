@@ -12,4 +12,27 @@ class VideoContent(models.Model):
     create_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return str(self.pk)
+
+
+class Comment(models.Model):
+    video_content = models.ForeignKey(to=VideoContent, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateField(auto_now_add=True)
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+
+    class Meta:
+        ordering = ('-created_at',)
+
+    def children(self):  # replies
+        return Comment.objects.filter(parent=self)
+
+    @property
+    def is_parent(self):
+        if self.parent is not None:
+            return False
+        return True
+
+    def __str__(self):
+        return str(self.pk)
