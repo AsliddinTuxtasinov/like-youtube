@@ -3,7 +3,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from auser.models import CustomUserChannel
+from auser.models import CustomUserChannel, FollowChannel
 from auser.serializers import CustomUserChannelSerializer
 
 
@@ -11,7 +11,7 @@ class CustomUserChannelView(APIView):
 
     def get(self, request, id):
         queryset = get_object_or_404(CustomUserChannel, id=id)
-        serializer = CustomUserChannelSerializer(queryset)
+        serializer = CustomUserChannelSerializer(queryset, context={'request': request})
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, id):
@@ -43,12 +43,12 @@ class CustomUserChannelCreateView(APIView):
 
     def get(self, request):
         queryset = CustomUserChannel.objects.all()
-        serializer = CustomUserChannelSerializer(queryset, many=True)
+        serializer = CustomUserChannelSerializer(queryset, many=True, context={'request': request})
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         data = request.data
-        serializer = CustomUserChannelSerializer(data=data)
+        serializer = CustomUserChannelSerializer(data=data, context={'request': request})
 
         if serializer.is_valid():
             owner_id = request.user.id
@@ -60,3 +60,35 @@ class CustomUserChannelCreateView(APIView):
                 detail={"message": "You were already created channel"}, code=status.HTTP_400_BAD_REQUEST)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FollowChannelView(APIView):
+
+    def post(self, request, channel_id):
+
+        if FollowChannel.objects.filter(follow_user=request.user).exists():
+            channel = get_object_or_404(CustomUserChannel, id=channel_id)
+            follow = get_object_or_404(FollowChannel, follow_user=request.user)
+            follow.add_follow(channel)
+
+            serializer = CustomUserChannelSerializer(channel, context={'request': request})
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        raise validators.ValidationError(
+            detail={"message": "you can not follow, please connect support"}, code=status.HTTP_400_BAD_REQUEST)
+
+
+class UnFollowChannelView(APIView):
+
+    def post(self, request, channel_id):
+
+        if FollowChannel.objects.filter(follow_user=request.user).exists():
+            channel = get_object_or_404(CustomUserChannel, id=channel_id)
+            follow = get_object_or_404(FollowChannel, follow_user=request.user)
+            follow.remove_follow(channel)
+
+            serializer = CustomUserChannelSerializer(channel, context={'request': request})
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        raise validators.ValidationError(
+            detail={"message": "you can not unfollow, please connect support"}, code=status.HTTP_400_BAD_REQUEST)

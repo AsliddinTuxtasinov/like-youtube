@@ -4,8 +4,9 @@ from dj_rest_auth.serializers import LoginSerializer, UserDetailsSerializer
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
 from allauth.utils import get_username_max_length
+from rest_framework.fields import SerializerMethodField
 
-from auser.models import CustomUserChannel
+from auser.models import CustomUserChannel, FollowChannel
 UserModel = get_user_model()
 
 
@@ -37,10 +38,50 @@ class RegisterCustomSerializer(RegisterSerializer):
         }
 
 
+class CustomUserChannelSerializer(serializers.ModelSerializer):
+    owner = SerializerMethodField()
+    create_at = serializers.DateTimeField(read_only=True)
+
+    follow_channel_url = serializers.HyperlinkedIdentityField(
+        view_name='follow-channel',
+        read_only=True,
+        lookup_field='pk',
+        lookup_url_kwarg='channel_id'
+    )
+    unfollow_channel_url = serializers.HyperlinkedIdentityField(
+        view_name='unfollow-channel',
+        read_only=True,
+        lookup_field='pk',
+        lookup_url_kwarg='channel_id'
+    )
+
+    class Meta:
+        model = CustomUserChannel
+        fields = ("id", "owner", "name", "describe", "create_at", "owner_id", "follow_channel_url", "unfollow_channel_url")
+
+    def get_owner(self, obj):
+        return obj.owner.username
+
+
+class FollowChannelSerializer(serializers.ModelSerializer):
+    following_channels = SerializerMethodField()
+
+    class Meta:
+        model = FollowChannel
+        fields = ['id', 'follow_user', 'following_channels']
+
+    def get_following_channels(self, obj):
+        qs = obj.follow_channels.all()
+        return CustomUserChannelSerializer(qs, many=True, context={'request': self.context.get('request')}).data
+
+
 class UserDetailsCustomSerializer(UserDetailsSerializer):
+    your_channel = SerializerMethodField()
+    following_channels = SerializerMethodField()
+
     class Meta:
         model = UserModel
-        extra_fields = ['date_joined']
+        extra_fields = ['date_joined', 'your_channel', 'following_channels']
 
         if hasattr(UserModel, 'USERNAME_FIELD'):
             extra_fields.append(UserModel.USERNAME_FIELD)
@@ -54,11 +95,14 @@ class UserDetailsCustomSerializer(UserDetailsSerializer):
         fields = ('id', *extra_fields)
         read_only_fields = ('email', 'date_joined')
 
+    def get_following_channels(self, obj):
+        if FollowChannel.objects.filter(follow_user=obj).exists():
+            follow_qs = FollowChannel.objects.get(follow_user=obj)
+            return FollowChannelSerializer(follow_qs).data
+        return None
 
-class CustomUserChannelSerializer(serializers.ModelSerializer):
-    owner = UserDetailsCustomSerializer(read_only=True)
-    create_at = serializers.DateTimeField(read_only=True)
-
-    class Meta:
-        model = CustomUserChannel
-        fields = ("id", "owner", "name", "describe", "create_at", "owner_id")
+    def get_your_channel(self, obj):
+        if CustomUserChannel.objects.filter(owner=obj).exists():
+            channel_qs = CustomUserChannel.objects.get(owner=obj)
+            return CustomUserChannelSerializer(channel_qs, context={'request': self.context.get('request')}).data
+        return None

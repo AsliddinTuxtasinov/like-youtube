@@ -23,3 +23,23 @@ class CustomUserChannel(models.Model):
     def __str__(self):
         # return self.name
         return str(self.pk)
+
+
+class FollowChannel(models.Model):
+    follow_user = models.OneToOneField(
+        to=CustomUser, on_delete=models.CASCADE, related_name="follow_user")
+    follow_channels = models.ManyToManyField(
+        to=CustomUserChannel, related_name="follow_channels", blank=True, null=True)
+
+    def add_follow(self, channel):
+        your_channel_id = self.follow_user.channel_user.id
+        if (channel.id != your_channel_id) and (channel not in self.follow_channels.all()):
+            self.follow_channels.add(channel)
+
+    def remove_follow(self, channel):
+        your_channel_id = self.follow_user.channel_user.id
+        if (channel.id != your_channel_id) and (channel in self.follow_channels.all()):
+            self.follow_channels.remove(channel)
+
+    def __str__(self):
+        return f"{self.follow_user}'s following"
