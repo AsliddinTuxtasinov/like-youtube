@@ -29,7 +29,7 @@ class FollowChannel(models.Model):
     follow_user = models.OneToOneField(
         to=CustomUser, on_delete=models.CASCADE, related_name="follow_user")
     follow_channels = models.ManyToManyField(
-        to=CustomUserChannel, related_name="follow_channels", blank=True, null=True)
+        to=CustomUserChannel, related_name="follow_channels", blank=True)
 
     def add_follow(self, channel):
         your_channel_id = self.follow_user.channel_user.id

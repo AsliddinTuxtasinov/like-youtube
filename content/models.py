@@ -11,6 +11,18 @@ class VideoContent(models.Model):
     describe = models.TextField(null=True, blank=True)
     create_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def views_count(self):
+        return self.video_content_ldv_user.views.all().count()
+
+    @property
+    def likes_count(self):
+        return self.video_content_ldv_user.likes.all().count()
+
+    @property
+    def dislikes_count(self):
+        return self.video_content_ldv_user.dislikes.all().count()
+
     def __str__(self):
         return str(self.pk)
 
@@ -36,3 +48,30 @@ class Comment(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+
+class ViewLikeDislike(models.Model):
+    video_content = models.OneToOneField(
+        to=VideoContent, on_delete=models.CASCADE, related_name="video_content_ldv_user")
+    likes = models.ManyToManyField(to=User, blank=True, related_name="video_content_like")
+    dislikes = models.ManyToManyField(to=User, blank=True, related_name="video_content_dislikes")
+    views = models.ManyToManyField(to=User, blank=True, related_name="video_content_views")
+
+    def add_views(self, user):
+        if user not in self.views.all():
+            self.views.add(user)
+
+    def add_likes(self, user):
+        if user not in self.likes.all():
+            self.likes.add(user)
+        if user in self.dislikes.all():
+            self.dislikes.remove(user)
+
+    def add_dislikes(self, user):
+        if user not in self.dislikes.all():
+            self.dislikes.add(user)
+        if user in self.likes.all():
+            self.likes.remove(user)
+
+    def __str__(self):
+        return f"{self.video_content} | {self.views.count()} | {self.likes.count()} | {self.dislikes.count()}"

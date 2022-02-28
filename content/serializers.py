@@ -66,13 +66,25 @@ class VideoContentSerializer(serializers.ModelSerializer):
         read_only=True,
         lookup_url_kwarg='content_pk'
     )
+    like_url = serializers.HyperlinkedIdentityField(
+        view_name='content:like',
+        read_only=True,
+        lookup_field='pk',
+        lookup_url_kwarg='video_content_id'
+    )
+    dislike_url = serializers.HyperlinkedIdentityField(
+        view_name='content:dislike',
+        read_only=True,
+        lookup_field='pk',
+        lookup_url_kwarg='video_content_id'
+    )
 
     class Meta:
         model = VideoContent
         fields = [
-            'content_detail_url',
-            'id', 'owner_channel', 'title',  'owner_channel_id',
-            'comments', 'create_comment_url'
+            'content_detail_url', 'like_url', 'dislike_url', 'id', 'title',
+            'views_count', 'likes_count',  'dislikes_count', 'owner_channel_id',
+            'owner_channel', 'comments', 'create_comment_url'
         ]
         read_only_fields = ['create_at']
 

@@ -1,7 +1,9 @@
-from rest_framework import permissions, generics, viewsets
+from rest_framework import permissions, generics, viewsets, status, validators
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from auser.models import CustomUserChannel
-from content.models import VideoContent, Comment
+from content.models import VideoContent, Comment, ViewLikeDislike
 from content.serializers import CommentSerializer, VideoContentSerializer
 
 
@@ -38,6 +40,12 @@ class VideoContentView(viewsets.ModelViewSet):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.video_content_ldv_user.add_views(user=request.user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
 
 class CommentCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -57,3 +65,35 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     lookup_url_kwarg = 'comment_pk'
+
+
+class LikesView(APIView):
+    queryset = VideoContent
+
+    def post(self, request, video_content_id):
+        video_content = self.queryset.objects.get(id=video_content_id)
+        serializer = VideoContentSerializer(video_content, context={'request': request})
+
+        if ViewLikeDislike.objects.filter(video_content=video_content).exists():
+            view_like_dislike = ViewLikeDislike.objects.get(video_content=video_content)
+            view_like_dislike.add_likes(user=request.user)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        raise validators.ValidationError(
+            detail={"message": "you can not like this content or already liked"}, code=status.HTTP_400_BAD_REQUEST)
+
+
+class DislikeView(APIView):
+    queryset = VideoContent
+
+    def post(self, request, video_content_id):
+        video_content = self.queryset.objects.get(id=video_content_id)
+        serializer = VideoContentSerializer(video_content, context={'request': request})
+
+        if ViewLikeDislike.objects.filter(video_content=video_content).exists():
+            view_like_dislike = ViewLikeDislike.objects.get(video_content=video_content)
+            view_like_dislike.add_dislikes(user=request.user)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        raise validators.ValidationError(
+            detail={"message": "you can not dislike this content or already disliked"}, code=status.HTTP_400_BAD_REQUEST)
