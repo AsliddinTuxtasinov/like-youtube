@@ -32,6 +32,10 @@ class VideoContentView(viewsets.ModelViewSet):
     queryset = VideoContent.objects.all()
     permission_classes = [IsChannelOwner, permissions.IsAuthenticatedOrReadOnly]
 
+    # def list(self, request, *args, **kwargs):
+    #     raise validators.ValidationError(
+    #         detail={"message": "Page Not Found"}, code=status.HTTP_404_NOT_FOUND)
+
     def perform_create(self, serializer):
         channel_id = generics.get_object_or_404(CustomUserChannel, owner=self.request.user).id
         serializer.save(owner_channel_id=channel_id)
@@ -96,4 +100,5 @@ class DislikeView(APIView):
             return Response(data=serializer.data, status=status.HTTP_200_OK)
 
         raise validators.ValidationError(
-            detail={"message": "you can not dislike this content or already disliked"}, code=status.HTTP_400_BAD_REQUEST)
+            detail={"message": "you can not dislike this content or already disliked"},
+            code=status.HTTP_400_BAD_REQUEST)

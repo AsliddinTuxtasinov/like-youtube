@@ -1,11 +1,16 @@
 from django.contrib import admin
 
-from content.models import VideoContent, Comment, ViewLikeDislike
+from content.models import VideoContent, VideoProxy, Comment, ViewLikeDislike
 
 
 @admin.register(VideoContent)
 class VideoContentAdmin(admin.ModelAdmin):
     readonly_fields = ('views_count', 'likes_count',  'dislikes_count')
+
+
+@admin.register(VideoProxy)
+class VideoProxyAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(Comment)

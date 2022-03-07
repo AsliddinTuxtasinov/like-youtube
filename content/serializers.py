@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 
 from auser.serializers import CustomUserChannelSerializer
-from content.models import VideoContent, Comment
+from content.models import VideoContent, Comment, VideoProxy
 User = get_user_model()
 
 
@@ -52,42 +52,44 @@ class CommentSerializer(serializers.ModelSerializer):
         return None
 
 
+class VideoProxySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = VideoProxy
+        fields = '__all__'
+
+
 class VideoContentSerializer(serializers.ModelSerializer):
     owner_channel = CustomUserChannelSerializer(read_only=True)
+    # proxy_videos = VideoProxySerializer(read_only=True, many=True)
+    proxy_videos = serializers.SerializerMethodField()
     comments = SerializerMethodField()
 
     content_detail_url = serializers.HyperlinkedIdentityField(
-        view_name='content:content-detail',
-        read_only=True,
-        lookup_field='pk'
-    )
+        view_name='content:content-detail', read_only=True,
+        lookup_field='pk')
     create_comment_url = serializers.HyperlinkedIdentityField(
-        view_name='content:comment-create',
-        read_only=True,
-        lookup_url_kwarg='content_pk'
-    )
+        view_name='content:comment-create', read_only=True,
+        lookup_url_kwarg='content_pk')
     like_url = serializers.HyperlinkedIdentityField(
-        view_name='content:like',
-        read_only=True,
-        lookup_field='pk',
-        lookup_url_kwarg='video_content_id'
-    )
+        view_name='content:like', read_only=True,
+        lookup_field='pk', lookup_url_kwarg='video_content_id')
     dislike_url = serializers.HyperlinkedIdentityField(
-        view_name='content:dislike',
-        read_only=True,
-        lookup_field='pk',
-        lookup_url_kwarg='video_content_id'
-    )
+        view_name='content:dislike', read_only=True,
+        lookup_field='pk', lookup_url_kwarg='video_content_id')
 
     class Meta:
         model = VideoContent
         fields = [
-            'content_detail_url', 'like_url', 'dislike_url', 'id', 'title',
-            'views_count', 'likes_count',  'dislikes_count', 'owner_channel_id',
-            'owner_channel', 'comments', 'create_comment_url'
+            'content_detail_url', 'like_url', 'dislike_url', 'id', 'title', 'describe',
+            'file_video', 'proxy_videos', 'views_count', 'likes_count',  'dislikes_count',
+            'owner_channel_id', 'owner_channel', 'comments', 'create_comment_url'
         ]
         read_only_fields = ['create_at']
 
     def get_comments(self, obj):
         qs = obj.comments.filter(parent=None)
         return CommentSerializer(qs, many=True).data
+
+    def get_proxy_videos(self, obj):
+        return VideoProxySerializer(obj.video_proxy, many=True).data

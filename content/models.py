@@ -9,7 +9,12 @@ class VideoContent(models.Model):
     owner_channel = models.ForeignKey(to=CustomUserChannel, on_delete=models.CASCADE, related_name="owner_channel")
     title = models.CharField(max_length=255)
     describe = models.TextField(null=True, blank=True)
+    file_video = models.FileField(upload_to='videos/')
     create_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def video_proxy(self):
+        return self.video_proxy.all()
 
     @property
     def views_count(self):
@@ -25,6 +30,16 @@ class VideoContent(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+
+class VideoProxy(models.Model):
+    original_video = models.ForeignKey(to=VideoContent, on_delete=models.CASCADE, related_name="video_proxy")
+    video_proxy = models.FileField(upload_to='videos/')
+    size = models.IntegerField()
+    frame = models.IntegerField()
+
+    # def __str__(self):
+    #     return f"{self.video_proxy}"
 
 
 class Comment(models.Model):
