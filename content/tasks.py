@@ -24,7 +24,7 @@ def create_video_proxy(file_name):
 
     for preset in VIDEO_PRESETS:
 
-        if info.streams[0].video_width > preset['size']:
+        if info.streams[0].video_width < preset['size']:
             break
 
         size = preset['size']
@@ -59,3 +59,8 @@ def create_video_proxy(file_name):
         )
 
 # celery -A youtube worker -l INFO --pool=solo
+
+
+@shared_task
+def qwer():
+    return "working..."
