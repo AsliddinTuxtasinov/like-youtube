@@ -3,10 +3,10 @@ from converter import Converter
 
 from content.models import VideoProxy, VideoContent
 
-ffmpegPath = r"C:\ffmpeg\bin\ffmpeg.exe"
-ffprobePath = r"C:\ffmpeg\bin\ffprobe.exe"
+#ffmpegPath = r"C:\ffmpeg\bin\ffmpeg.exe"
+#ffprobePath = r"C:\ffmpeg\bin\ffprobe.exe"
 
-conv = Converter(ffmpegPath, ffprobePath)
+conv = Converter() #(ffmpegPath, ffprobePath)
 
 
 VIDEO_PRESETS = [
