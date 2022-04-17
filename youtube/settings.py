@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-65j&!0-((rqgf*w%0tvntgg)48#&-*g4fjl0&0)r-)s%jg1ljr
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -47,6 +45,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+
+    'drf_yasg',
 
     # local apps
     'auser',
@@ -107,7 +107,22 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 }
 
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = ("none", )
+ACCOUNT_EMAIL_VERIFICATION = ("none",)
+
+# drf yasg settings
+# SWAGGER_SETTINGS = {
+#     'SECURITY_DEFINITIONS': {
+#         'USE_SESSION_AUTH': False,
+#         # 'Basic': {
+#         #     'type': 'basic'
+#         # },
+#         # 'Bearer': {
+#         #     'type': 'apiKey',
+#         #     'name': 'Authorization',
+#         #     'in': 'header'
+#         # }
+#     }
+# }
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -118,7 +133,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -138,7 +152,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -149,7 +162,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -167,4 +179,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Broker settings.
-# CELERY_BROKER_URL = "amqp://guest:guest@localhost:5672//"  # broker_url = 'amqp://guest:guest@localhost:5672//'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+# "amqp://guest:guest@localhost:5672//"  # broker_url = 'amqp://guest:guest@localhost:5672//'
